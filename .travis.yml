@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t itsadeadh2/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true itsadeadh2/react-test npm test
+
+after_success:
+  - docker build -t itsadeadh2/complex-client ./client
+  - docker build -t itsadeadh2/complex-nginx ./nginx
+  - docker build -t itsadeadh2/complex-server ./server
+  - docker build -t itsadeadh2/complex-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push itsadeadh2/complex-client
+  - docker push itsadeadh2/complex-nginx
+  - docker push itsadeadh2/complex-server
+  - docker push itsadeadh2/complex-worker
+
+branches:
+  only:
+  - master
